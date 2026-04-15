@@ -62,7 +62,7 @@ def generate_digest(settings: Settings, days: int = 1) -> str:
     lines.append("")
 
     for i, signal in enumerate(all_sorted[:10], 1):
-        scores = signal.get("scores", {})
+        scores = signal.get("scores") or {}
         composite = scores.get("composite", "unscored")
         if isinstance(composite, float):
             score_str = f"**{composite:.2f}**/1.00"
@@ -71,6 +71,8 @@ def generate_digest(settings: Settings, days: int = 1) -> str:
 
         lines.append(f"### {i}. {signal['title']}")
         lines.append(f"**Score:** {score_str} | **Type:** {signal.get('signal_type', 'unknown')}")
+        if signal.get("user_context"):
+            lines.append(f" | **Who:** {signal['user_context']}")
         lines.append("")
 
         if signal.get("description"):
@@ -83,6 +85,10 @@ def generate_digest(settings: Settings, days: int = 1) -> str:
 
         if signal.get("potential_product"):
             lines.append(f"**Product idea:** {signal['potential_product']}")
+            lines.append("")
+
+        if signal.get("market_size_hint"):
+            lines.append(f"**Market size:** {signal['market_size_hint']}")
             lines.append("")
 
         # Show score breakdown if available
