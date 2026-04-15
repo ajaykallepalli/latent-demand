@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 
 import anthropic
 import structlog
@@ -39,48 +40,58 @@ def score_signal(signal: dict, settings: Settings) -> dict | None:
         potential_product=signal.get("potential_product", "Not specified"),
     )
 
-    try:
-        response = client.messages.create(
-            model=settings.scoring_model,
-            max_tokens=2048,
-            system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
-            messages=[{"role": "user", "content": user_prompt}],
-        )
+    for attempt in range(3):
+        try:
+            response = client.messages.create(
+                model=settings.scoring_model,
+                max_tokens=2048,
+                system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": user_prompt}],
+            )
 
-        raw_text = response.content[0].text.strip()
+            raw_text = response.content[0].text.strip()
 
-        if raw_text.startswith("```"):
-            lines = raw_text.split("\n")
-            raw_text = "\n".join(lines[1:-1])
+            if raw_text.startswith("```"):
+                lines = raw_text.split("\n")
+                raw_text = "\n".join(lines[1:-1])
 
-        result = json.loads(raw_text)
+            result = json.loads(raw_text)
 
-        scores = {}
-        for dim in ("friction", "frequency", "market_size", "feasibility", "timing", "competition"):
-            dim_data = result.get("scores", {}).get(dim, {})
-            scores[dim] = dim_data.get("score", 0.0)
+            scores = {}
+            for dim in ("friction", "frequency", "market_size", "feasibility", "timing", "competition"):
+                dim_data = result.get("scores", {}).get(dim, {})
+                scores[dim] = dim_data.get("score", 0.0)
 
-        scores["composite"] = result.get("composite_score", _compute_composite(scores))
+            scores["composite"] = result.get("composite_score", _compute_composite(scores))
 
-        logger.info(
-            "scoring.complete",
-            signal=signal["title"][:60],
-            composite=scores["composite"],
-            input_tokens=response.usage.input_tokens,
-            output_tokens=response.usage.output_tokens,
-        )
+            logger.info(
+                "scoring.complete",
+                signal=signal["title"][:60],
+                composite=scores["composite"],
+                input_tokens=response.usage.input_tokens,
+                output_tokens=response.usage.output_tokens,
+            )
 
-        return {
-            "scores": scores,
-            "opportunity_summary": result.get("opportunity_summary", ""),
-            "risks": result.get("risks", []),
-            "suggested_mvp": result.get("suggested_mvp", ""),
-        }
+            # Rate limit: stay under 30k tokens/min
+            time.sleep(10)
 
-    except json.JSONDecodeError as e:
-        logger.error("scoring.json_parse_error", signal=signal["id"], error=str(e))
-    except anthropic.APIError as e:
-        logger.error("scoring.api_error", signal=signal["id"], error=str(e))
+            return {
+                "scores": scores,
+                "opportunity_summary": result.get("opportunity_summary", ""),
+                "risks": result.get("risks", []),
+                "suggested_mvp": result.get("suggested_mvp", ""),
+            }
+
+        except anthropic.RateLimitError:
+            wait = 30 * (attempt + 1)
+            logger.warning("scoring.rate_limited", wait_seconds=wait, attempt=attempt + 1)
+            time.sleep(wait)
+        except json.JSONDecodeError as e:
+            logger.error("scoring.json_parse_error", signal=signal["id"], error=str(e))
+            break
+        except anthropic.APIError as e:
+            logger.error("scoring.api_error", signal=signal["id"], error=str(e))
+            break
 
     return None
 
