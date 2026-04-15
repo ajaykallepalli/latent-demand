@@ -47,14 +47,7 @@ def _get_collector(source: dict, settings: Settings):
     elif platform == "reddit":
         from latent_demand.collectors.reddit import RedditCollector
 
-        if not settings.reddit_client_id:
-            logger.warning("reddit.no_credentials", source=source["id"])
-            return None
-        return RedditCollector(
-            client_id=settings.reddit_client_id,
-            client_secret=settings.reddit_client_secret,
-            user_agent=settings.reddit_user_agent,
-        )
+        return RedditCollector()
     else:
         logger.warning("collector.unknown_platform", platform=platform)
         return None
