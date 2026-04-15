@@ -47,10 +47,15 @@ def extract_signals(
         batch = items[i : i + batch_size]
         platform = batch[0].get("platform", "unknown")
 
+        # Collect source names for context
+        sources_in_batch = set(item.get("source", "") for item in batch)
+        source_context = ", ".join(s for s in sources_in_batch if s) or "mixed"
+
         content_text = format_content_batch(batch)
         user_prompt = USER_PROMPT_TEMPLATE.format(
             count=len(batch),
             platform=platform,
+            source_context=source_context,
             content=content_text,
         )
 
