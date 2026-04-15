@@ -136,11 +136,12 @@ def generate_digest(settings: Settings, days: int = 1) -> str:
 
 
 def save_digest(settings: Settings, days: int = 1) -> Path:
-    """Generate and save a digest to the reports directory."""
+    """Generate and save a digest to the reports directory. Never overwrites."""
     digest_md = generate_digest(settings, days)
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    now = datetime.now(timezone.utc)
+    timestamp = now.strftime("%Y-%m-%d_%H%M%S")
     period = "daily" if days <= 1 else "weekly"
-    path = settings.reports_dir / f"digest_{period}_{today}.md"
+    path = settings.reports_dir / f"digest_{period}_{timestamp}.md"
     path.write_text(digest_md)
     logger.info("digest.saved", path=str(path))
     return path
