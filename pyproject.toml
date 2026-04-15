@@ -23,5 +23,8 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/latent_demand"]
 
+[tool.hatch.build.targets.editable]
+packages = ["src/latent_demand"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

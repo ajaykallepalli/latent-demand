@@ -35,6 +35,14 @@ def extract_signals(
     batch_size = settings.extraction_batch_size
     all_signals = []
 
+    # Pre-compute starting signal ID to avoid collisions within a run
+    existing = read_json(settings.signals_path)
+    if existing:
+        last_num = max(int(s["id"].split("_")[1]) for s in existing)
+    else:
+        last_num = 0
+    _counter = {"n": last_num}
+
     for i in range(0, len(items), batch_size):
         batch = items[i : i + batch_size]
         platform = batch[0].get("platform", "unknown")
@@ -76,7 +84,8 @@ def extract_signals(
 
             # Convert extracted signals to storage format
             for raw_signal in raw_signals:
-                signal = _format_signal(raw_signal, settings)
+                _counter["n"] += 1
+                signal = _format_signal(raw_signal, _counter["n"])
                 if signal:
                     all_signals.append(signal)
 
@@ -96,13 +105,13 @@ def extract_signals(
     return all_signals
 
 
-def _format_signal(raw_signal: dict, settings: Settings) -> dict | None:
+def _format_signal(raw_signal: dict, seq_num: int) -> dict | None:
     """Convert a raw extracted signal to the storage format."""
     title = raw_signal.get("title")
     if not title:
         return None
 
-    signal_id = next_signal_id(settings.signals_path)
+    signal_id = f"sig_{seq_num:03d}"
     evidence = raw_signal.get("evidence", {})
     if isinstance(evidence, dict):
         evidence = [evidence]

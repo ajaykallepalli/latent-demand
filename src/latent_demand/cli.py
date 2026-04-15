@@ -50,6 +50,46 @@ def scan(
 
 
 @app.command()
+def extract(
+    platform: Optional[str] = typer.Option(
+        None, "--platform", "-p", help="Filter raw files by platform."
+    ),
+    date: Optional[str] = typer.Option(
+        None, "--date", "-d", help="Date to process (YYYY-MM-DD). Defaults to today."
+    ),
+):
+    """Extract signals from already-collected raw data."""
+    settings = _get_settings()
+    settings.init_data_files()
+    from datetime import datetime as dt
+    from datetime import timezone
+
+    from latent_demand.pipeline.orchestrator import run_extract
+    from latent_demand.storage import read_json
+
+    if not date:
+        date = dt.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Find matching raw files
+    import glob as g
+    pattern = str(settings.raw_dir / f"{'*' if not platform else platform}_{date}.json")
+    files = g.glob(pattern)
+
+    if not files:
+        typer.echo(f"No raw files found for pattern: {pattern}")
+        raise typer.Exit(1)
+
+    all_items = []
+    for f in files:
+        items = read_json(Path(f))
+        all_items.extend(items)
+
+    typer.echo(f"Found {len(all_items)} items in {len(files)} raw file(s).")
+    signals = run_extract(settings, all_items)
+    typer.echo(f"Extracted {len(signals)} new signals.")
+
+
+@app.command()
 def analyze():
     """Score all unscored signals."""
     settings = _get_settings()
@@ -166,7 +206,7 @@ def signals(
 
     for s in sorted_signals[:top]:
         sid = s["id"]
-        scores = s.get("scores", {})
+        scores = s.get("scores") or {}
         composite = scores.get("composite")
         score_str = f"{composite:.2f}" if composite is not None else "  -  "
         stype = s.get("signal_type", "unknown")[:20]
