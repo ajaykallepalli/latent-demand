@@ -1,0 +1,156 @@
+[
+  {
+    "id": "hn-show",
+    "platform": "hackernews",
+    "identifier": "show_hn",
+    "config": {"tags": "show_hn", "search_type": "search_by_date"},
+    "priority": 9,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "hn-ask",
+    "platform": "hackernews",
+    "identifier": "ask_hn",
+    "config": {"tags": "ask_hn", "search_type": "search_by_date"},
+    "priority": 8,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "hn-i-built",
+    "platform": "hackernews",
+    "identifier": "i_built",
+    "config": {"query": "I built", "search_type": "search_by_date"},
+    "priority": 9,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "hn-workaround",
+    "platform": "hackernews",
+    "identifier": "workaround",
+    "config": {"query": "workaround OR hack OR workflow OR \"I made\"", "search_type": "search_by_date"},
+    "priority": 7,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-chatgpt",
+    "platform": "reddit",
+    "identifier": "r/ChatGPT",
+    "config": {"subreddit": "ChatGPT", "sort": "hot", "limit": 50},
+    "priority": 9,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-claudeai",
+    "platform": "reddit",
+    "identifier": "r/ClaudeAI",
+    "config": {"subreddit": "ClaudeAI", "sort": "hot", "limit": 50},
+    "priority": 9,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-localllama",
+    "platform": "reddit",
+    "identifier": "r/LocalLLaMA",
+    "config": {"subreddit": "LocalLLaMA", "sort": "hot", "limit": 50},
+    "priority": 8,
+    "yield_score": 0.0,
+    "scan_interval_hours": 6,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-machinelearning",
+    "platform": "reddit",
+    "identifier": "r/MachineLearning",
+    "config": {"subreddit": "MachineLearning", "sort": "hot", "limit": 30},
+    "priority": 7,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-singularity",
+    "platform": "reddit",
+    "identifier": "r/singularity",
+    "config": {"subreddit": "singularity", "sort": "hot", "limit": 30},
+    "priority": 6,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-sideproject",
+    "platform": "reddit",
+    "identifier": "r/SideProject",
+    "config": {"subreddit": "SideProject", "sort": "hot", "limit": 30},
+    "priority": 8,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-selfhosted",
+    "platform": "reddit",
+    "identifier": "r/selfhosted",
+    "config": {"subreddit": "selfhosted", "sort": "hot", "limit": 30},
+    "priority": 7,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-productivity",
+    "platform": "reddit",
+    "identifier": "r/productivity",
+    "config": {"subreddit": "productivity", "sort": "hot", "limit": 30},
+    "priority": 6,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-startups",
+    "platform": "reddit",
+    "identifier": "r/startups",
+    "config": {"subreddit": "startups", "sort": "hot", "limit": 30},
+    "priority": 7,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  },
+  {
+    "id": "reddit-artificial",
+    "platform": "reddit",
+    "identifier": "r/artificial",
+    "config": {"subreddit": "artificial", "sort": "hot", "limit": 30},
+    "priority": 6,
+    "yield_score": 0.0,
+    "scan_interval_hours": 12,
+    "last_scanned_at": null,
+    "enabled": true
+  }
+]
