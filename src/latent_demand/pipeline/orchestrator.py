@@ -53,10 +53,38 @@ def _get_collector(source: dict, settings: Settings):
         return None
 
 
-def run_collect(settings: Settings, platform: str | None = None) -> list[dict]:
+def run_discover(settings: Settings) -> list[dict]:
+    """Discover new subreddits to scan this run. Returns temporary sources."""
+    from latent_demand.collectors.discovery import discover_sources
+
+    existing_sources = get_sources(settings.sources_path)
+    existing_subs = set()
+    for s in existing_sources:
+        # Extract subreddit name from config or identifier
+        sub = s.get("config", {}).get("subreddit", "")
+        if not sub and s.get("identifier", "").startswith("r/"):
+            sub = s["identifier"][2:]
+        if sub:
+            existing_subs.add(sub)
+
+    discovered = discover_sources(existing_ids=existing_subs)
+    logger.info("discover.complete", new_sources=len(discovered))
+    return discovered
+
+
+def run_collect(
+    settings: Settings,
+    platform: str | None = None,
+    extra_sources: list[dict] | None = None,
+) -> list[dict]:
     """Run the collection stage. Returns all newly collected items."""
     settings.init_data_files()
     sources = get_sources(settings.sources_path)
+
+    # Add any dynamically discovered sources for this run
+    if extra_sources:
+        sources = sources + extra_sources
+
     seen = get_seen_set(settings.seen_path)
     all_new_items = []
 
@@ -88,15 +116,16 @@ def run_collect(settings: Settings, platform: str | None = None) -> list[dict]:
             mark_seen(settings.seen_path, [item["id"] for item in new_items])
             all_new_items.extend(new_items)
 
-        # Update source metadata
-        yield_score = len(new_items) / max(len(items), 1) if items else 0
-        old_yield = source.get("yield_score", 0)
-        new_yield = 0.7 * old_yield + 0.3 * yield_score
+        # Update source metadata (skip for temporary discovered sources)
+        if not source.get("_discovered"):
+            yield_score = len(new_items) / max(len(items), 1) if items else 0
+            old_yield = source.get("yield_score", 0)
+            new_yield = 0.7 * old_yield + 0.3 * yield_score
 
-        update_source(settings.sources_path, source["id"], {
-            "last_scanned_at": datetime.now(timezone.utc).isoformat(),
-            "yield_score": round(new_yield, 4),
-        })
+            update_source(settings.sources_path, source["id"], {
+                "last_scanned_at": datetime.now(timezone.utc).isoformat(),
+                "yield_score": round(new_yield, 4),
+            })
 
         logger.info(
             "collect.done",
@@ -150,15 +179,21 @@ def run_full_pipeline(
     platform: str | None = None,
     skip_scoring: bool = False,
     generate_report: bool = True,
+    discover: bool = True,
 ) -> dict:
-    """Run the full pipeline: collect → extract → score → report.
+    """Run the full pipeline: discover → collect → extract → score → report.
 
     Returns a summary dict.
     """
     logger.info("pipeline.start", platform=platform or "all")
 
+    # 0. Discover new sources (unless scanning a specific platform)
+    discovered = []
+    if discover and not platform:
+        discovered = run_discover(settings)
+
     # 1. Collect
-    new_items = run_collect(settings, platform=platform)
+    new_items = run_collect(settings, platform=platform, extra_sources=discovered)
 
     # 2. Extract signals
     new_signals = run_extract(settings, new_items)

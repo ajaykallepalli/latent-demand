@@ -240,6 +240,25 @@ def sources():
 
 
 @app.command()
+def discover():
+    """Discover new subreddits to scan (popular, search-based, random)."""
+    settings = _get_settings()
+    settings.init_data_files()
+    from latent_demand.pipeline.orchestrator import run_discover
+
+    typer.echo("Discovering new subreddits...")
+    sources = run_discover(settings)
+
+    if not sources:
+        typer.echo("No new subreddits discovered (all already tracked).")
+        return
+
+    typer.echo(f"\nFound {len(sources)} new subreddits:")
+    for s in sources:
+        typer.echo(f"  {s['identifier']}")
+
+
+@app.command()
 def init():
     """Initialize data directory and seed sources."""
     settings = _get_settings()
