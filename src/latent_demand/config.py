@@ -13,8 +13,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
 
     # Models
-    extraction_model: str = "claude-sonnet-4-6"
-    scoring_model: str = "claude-sonnet-4-6"
+    extraction_model: str = "claude-haiku-4-5-20251001"
+    scoring_model: str = "claude-haiku-4-5-20251001"
+    report_model: str = "claude-sonnet-4-6"
 
     # Reddit
     reddit_client_id: str = ""

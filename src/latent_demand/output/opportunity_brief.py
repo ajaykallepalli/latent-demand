@@ -92,7 +92,7 @@ def generate_brief(signal: dict, settings: Settings) -> str:
     )
 
     response = client.messages.create(
-        model=settings.scoring_model,
+        model=settings.report_model,
         max_tokens=4096,
         system=[{"type": "text", "text": BRIEF_SYSTEM, "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user_prompt}],
